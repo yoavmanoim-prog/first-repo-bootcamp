@@ -1,0 +1,10 @@
+name: CI
+on: [push]
+jobs:
+    greet:
+        runs-on: ubuntu-latest
+        steps:
+              - name: dockerruner
+                uses: docker://alpine:latest
+                with:
+                    args: echo "Hello, world!"
