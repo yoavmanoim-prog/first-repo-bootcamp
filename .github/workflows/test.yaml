@@ -19,7 +19,7 @@ jobs:
           node-version: '20'
       - name: Install dependencies  
         run: npm install
-        working-directory: lerning-github
+        working-directory: /home/runner/work/first-repo-bootcamp/
 
       - name: Run linter
         run: npm run lint
@@ -41,14 +41,14 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-        working-directory: lerning-github
+        working-directory: /home/runner/work/first-repo-bootcamp/
 
       - name: Run tests
         run: npm test
-        working-directory: lerning-github
+        working-directory: /home/runner/work/first-repo-bootcamp/
 
       - name: Run tests with coverage
         run: npm run test:coverage
-
+        working-directory: /home/runner/work/first-repo-bootcamp/
       - name: Display coverage
         run: cat coverage/lcov.info || echo "No coverage file"
