@@ -17,8 +17,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - run: npm install
+      - name: Install dependencies  
+        run: npm install
+        working-directory: lerning-github
 
       - name: Run linter
         run: npm run lint
@@ -38,10 +39,13 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - run: npm install
+      - name: Install dependencies
+        run: npm install
+        working-directory: lerning-github
 
       - name: Run tests
         run: npm test
+        working-directory: lerning-github
 
       - name: Run tests with coverage
         run: npm run test:coverage
