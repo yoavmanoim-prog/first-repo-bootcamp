@@ -1,0 +1,63 @@
+name: Conditional Outputs
+
+on: [push]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend-changed: ${{ steps.changes.outputs.backend }}
+      frontend-changed: ${{ steps.changes.outputs.frontend }}
+      deploy-needed: ${{ steps.changes.outputs.deploy }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changes
+        id: changes
+        run: |
+          git diff --name-only HEAD^ HEAD > changes.txt
+
+          if grep -q "^backend/" changes.txt; then
+            echo "backend=true" >> $GITHUB_OUTPUT
+          else
+            echo "backend=false" >> $GITHUB_OUTPUT
+          fi
+
+          if grep -q "^frontend/" changes.txt; then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+          else
+            echo "frontend=false" >> $GITHUB_OUTPUT
+          fi
+
+          if grep -q "^backend/\|^frontend/" changes.txt; then
+            echo "deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "deploy=false" >> $GITHUB_OUTPUT
+          fi
+
+  build-backend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend-changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Building backend"
+
+  build-frontend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend-changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Building frontend"
+
+  deploy:
+    needs: [detect-changes, build-backend, build-frontend]
+    if: |
+      always() &&
+      needs.detect-changes.outputs.deploy-needed == 'true' &&
+      !contains(needs.*.result, 'failure')
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Deploying changes"

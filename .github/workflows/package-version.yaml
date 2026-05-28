@@ -1,0 +1,46 @@
+name: Package Version
+
+on: [push]
+
+jobs:
+  read-package:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.package.outputs.version }}
+      name: ${{ steps.package.outputs.name }}
+      node-version: ${{ steps.package.outputs.node-version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read package.json
+        id: package
+        run: |
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+          echo "name=$(node -p "require('./package.json').name")" >> $GITHUB_OUTPUT
+          echo "node-version=$(node -p "require('./package.json').engines?.node || '18'")" >> $GITHUB_OUTPUT
+
+  build:
+    needs: read-package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ needs.read-package.outputs.node-version }}
+
+      - name: Build
+        run: |
+          echo "Building ${{ needs.read-package.outputs.name }}"
+          echo "Version: ${{ needs.read-package.outputs.version }}"
+
+  tag-release:
+    needs: [read-package, build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Create tag
+        run: |
+          echo "Would create tag: v${{ needs.read-package.outputs.version }}"

@@ -1,0 +1,33 @@
+name: Job Outputs
+
+on: [push]
+
+jobs:
+  generate-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      build-number: ${{ steps.version.outputs.build }}
+
+    steps:
+      - name: Generate version
+        id: version
+        run: |
+          VERSION="1.2.3"
+          BUILD="$GITHUB_RUN_NUMBER"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build=$BUILD" >> $GITHUB_OUTPUT
+
+      - name: Display values
+        run: |
+          echo "Version: ${{ steps.version.outputs.version }}"
+          echo "Build: ${{ steps.version.outputs.build }}"
+
+  use-version:
+    needs: generate-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use outputs
+        run: |
+          echo "Building version: ${{ needs.generate-version.outputs.version }}"
+          echo "Build number: ${{ needs.generate-version.outputs.build-number }}"

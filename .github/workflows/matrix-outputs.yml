@@ -1,0 +1,35 @@
+name: Matrix Outputs
+
+on: [push]
+
+jobs:
+  test-matrix:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            emoji: 🐧
+          - os: windows-latest
+            emoji: 🪟
+          - os: macos-latest
+            emoji: 🍎
+
+    outputs:
+      ubuntu-status: ${{ steps.test.outputs.status }}
+
+    steps:
+      - name: Run tests
+        id: test
+        run: |
+          echo "${{ matrix.emoji }} Testing on ${{ matrix.os }}"
+          echo "status=passed" >> $GITHUB_OUTPUT
+
+  report:
+    needs: test-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report results
+        run: |
+          echo "Test Status: ${{ needs.test-matrix.outputs.ubuntu-status }}"
